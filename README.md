@@ -13,7 +13,7 @@ choose template → preview → edit → download (PDF/DOCX) → save → my res
   express-validator on every write route, whitelisted update fields
 - **File parsing**: `pdf-parse` / `mammoth`, parsed **in memory** — uploaded files are
   never written to disk, so this runs fine on ephemeral filesystems (Render, Railway, Vercel)
-- **AI**: OpenAI API (`gpt-4o-mini`) for resume suggestions
+- **AI**: Groq API (`llama-3.3-70b-versatile`, free tier, OpenAI-compatible) for resume suggestions
 - **Export**: PDF via the browser's print dialog (`window.print()` + print-only CSS);
   DOCX generated client-side with the `docx` npm package — no backend round trip
 - **Tests**: Jest + Supertest, full auth and resume-CRUD coverage including
@@ -109,4 +109,4 @@ These are genuinely outside what a codebase alone can cover:
 - A real domain + TLS (handled automatically by Vercel/Render/Netlify)
 - The resume-upload parser is a lightweight heuristic, not a robust parser —
   fine for a demo/MVP, worth swapping for a dedicated parsing service at scale
-- Load-testing the `/api/ai/suggest` endpoint and setting an OpenAI spend cap
+- Load-testing the `/api/ai/improve` endpoint and watching Groq's free-tier rate limits

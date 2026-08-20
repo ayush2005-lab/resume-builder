@@ -1,14 +1,22 @@
-const { GoogleGenAI } = require("@google/genai");
+const OpenAI = require("openai");
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
+// Groq's API is OpenAI-compatible, so we reuse the official OpenAI SDK and
+// just point it at Groq's endpoint. Groq's free tier requires no credit card.
+// Get a key at https://console.groq.com/keys
+const groq = new OpenAI({
+  apiKey: process.env.GROQ_API_KEY,
+  baseURL: "https://api.groq.com/openai/v1",
 });
+
+const MODEL = "openai/gpt-oss-120b";
+// Groq deprecates/renames models periodically — if this starts failing again,
+// check https://console.groq.com/docs/models for the current recommended model.
 
 exports.improveResume = async (req, res) => {
   try {
-    if (!process.env.GEMINI_API_KEY) {
+    if (!process.env.GROQ_API_KEY) {
       return res.status(503).json({
-        message: "AI suggestions are not configured on the server (missing GEMINI_API_KEY).",
+        message: "AI suggestions are not configured on the server (missing GROQ_API_KEY).",
       });
     }
 
@@ -19,6 +27,7 @@ exports.improveResume = async (req, res) => {
         message: "Resume data is required.",
       });
     }
+
     const prompt = `
 You are an expert ATS resume writer.
 
@@ -56,38 +65,28 @@ Resume:
 ${JSON.stringify(resume, null, 2)}
 `;
 
-//     const prompt = `
-// You are a professional resume writer.
-
-// Improve the following resume.
-
-// Rules:
-// - Make it ATS friendly.
-// - Keep the same meaning.
-// - Use strong action verbs.
-// - Improve grammar.
-// - Keep formatting simple.
-// - Return ONLY the improved resume in JSON.
-
-// Resume:
-// ${JSON.stringify(resume, null, 2)}
-// `;
-
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: prompt,
+    const completion = await groq.chat.completions.create({
+      model: MODEL,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
     });
 
     res.json({
       success: true,
-      result: response.text,
+      result: completion.choices[0]?.message?.content || "",
     });
   } catch (err) {
     console.error(err);
 
+    // Surface the real reason (bad model id, invalid key, rate limit, etc.)
+    // in logs and, in dev, in the response too — makes future issues fast to diagnose.
+    const detail = err?.error?.message || err?.message || "Unknown error";
+    console.error("Groq request detail:", detail);
+
     res.status(500).json({
       success: false,
       message: "AI request failed.",
+      ...(process.env.NODE_ENV !== "production" && { detail }),
     });
   }
 };

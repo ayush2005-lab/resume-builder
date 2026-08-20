@@ -17,8 +17,8 @@ if (!isTestEnv) {
     console.error(`Missing required environment variables: ${missing.join(", ")}`);
     process.exit(1);
   }
-  if (!process.env.GEMINI_API_KEY) {
-    console.warn("GEMINI_API_KEY is not set — AI suggestion requests will fail until it is configured.");
+  if (!process.env.GROQ_API_KEY) {
+    console.warn("GROQ_API_KEY is not set — AI suggestion requests will fail until it is configured.");
   }
   connectDB();
 }
