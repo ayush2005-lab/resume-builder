@@ -1,131 +1,93 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+const { GoogleGenAI } = require("@google/genai");
 
-let client;
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY,
+});
 
-function getClient() {
-  if (!client) {
-    client = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  }
-
-  return client;
-}
-
-const SYSTEM_PROMPT = `
-You are a professional resume-writing assistant.
-
-Given resume content, suggest improvements that:
-- Make the writing concise and professional.
-- Use strong action verbs.
-- Improve clarity and impact.
-- Quantify achievements only when reasonable and supported by the original content.
-- Never invent fake experience, skills, education, companies, or achievements.
-
-Respond ONLY with valid JSON in this exact shape:
-
-{
-  "suggestions": [
-    {
-      "field": "summary",
-      "before": "...",
-      "after": "..."
-    }
-  ]
-}
-
-The "field" must be exactly one of:
-- "summary"
-- "experience"
-- "skills"
-
-Keep "before" as a short excerpt from the original text.
-Keep "after" as the improved replacement.
-
-Return at most 5 suggestions.
-
-If there is not enough content to improve, return:
-
-{
-  "suggestions": []
-}
-
-Do not use markdown.
-Do not wrap the JSON in code fences.
-`;
-
-async function suggestImprovements(req, res) {
-  const {
-    summary = "",
-    experience = "",
-    skills = "",
-  } = req.body;
-
-  if (!process.env.GEMINI_API_KEY) {
-    return res.status(503).json({
-      message: "GEMINI_API_KEY is not configured on the server.",
-    });
-  }
-
+exports.improveResume = async (req, res) => {
   try {
-    const model = getClient().getGenerativeModel({
-      model: "gemini-2.0-flash",
-      systemInstruction: SYSTEM_PROMPT,
-      generationConfig: {
-        temperature: 0.4,
-        responseMimeType: "application/json",
-      },
-    });
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(503).json({
+        message: "AI suggestions are not configured on the server (missing GEMINI_API_KEY).",
+      });
+    }
 
+    const { resume } = req.body;
+
+    if (!resume) {
+      return res.status(400).json({
+        message: "Resume data is required.",
+      });
+    }
     const prompt = `
-Review the following resume content.
+You are an expert ATS resume writer.
 
-Summary:
-${summary}
+Analyze this resume and return ONLY valid JSON.
 
-Experience:
-${experience}
+Return exactly this format:
 
-Skills:
-${skills}
+[
+  {
+    "field":"summary",
+    "before":"original summary",
+    "after":"improved summary"
+  },
+  {
+    "field":"experience",
+    "before":"original experience",
+    "after":"improved experience"
+  },
+  {
+    "field":"skills",
+    "before":"original skills",
+    "after":"improved skills"
+  }
+]
 
-Return your suggestions in the required JSON format.
+Rules:
+- Do not return markdown.
+- Do not wrap the JSON in \`\`\`.
+- Return only the JSON array.
+- Improve grammar.
+- Use strong action verbs.
+- Make the content ATS friendly.
+
+Resume:
+${JSON.stringify(resume, null, 2)}
 `;
 
-    const result = await model.generateContent(prompt);
+//     const prompt = `
+// You are a professional resume writer.
 
-    const response = result.response;
-    const raw = response.text();
+// Improve the following resume.
 
-    let parsed;
+// Rules:
+// - Make it ATS friendly.
+// - Keep the same meaning.
+// - Use strong action verbs.
+// - Improve grammar.
+// - Keep formatting simple.
+// - Return ONLY the improved resume in JSON.
 
-    try {
-      parsed = JSON.parse(raw);
-    } catch (error) {
-      console.error("Gemini returned invalid JSON:", raw);
+// Resume:
+// ${JSON.stringify(resume, null, 2)}
+// `;
 
-      return res.status(502).json({
-        message: "AI response was not valid JSON.",
-      });
-    }
-
-    if (!Array.isArray(parsed.suggestions)) {
-      return res.status(502).json({
-        message: "AI response did not contain valid suggestions.",
-      });
-    }
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    });
 
     res.json({
-      suggestions: parsed.suggestions.slice(0, 5),
+      success: true,
+      result: response.text,
     });
   } catch (err) {
-    console.error("Gemini error:", err.message);
+    console.error(err);
 
-    res.status(502).json({
-      message: "AI suggestion request failed.",
-      detail: err.message,
+    res.status(500).json({
+      success: false,
+      message: "AI request failed.",
     });
   }
-}
-
-module.exports = {
-  suggestImprovements,
 };

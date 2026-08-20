@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
-const { protect } = require("../middleware/authMiddleware");
-const { suggestImprovements } = require("../controllers/aiController");
 
-router.post("/suggest", protect, suggestImprovements);
+const { improveResume } = require("../controllers/aiController");
+
+router.post("/improve", improveResume);
 
 module.exports = router;

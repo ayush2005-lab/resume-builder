@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosClient from "../api/axiosClient";
+import { improveResume } from "../api/ai";
 import { useDraft } from "../context/DraftContext";
 
 export default function AISuggestions() {
@@ -12,21 +12,58 @@ export default function AISuggestions() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // useEffect(() => {
+  //   async function fetchSuggestions() {
+  //     try {
+  //       setLoading(true);
+  //       setError("");
+
+  //       const { data } = await axiosClient.post("/ai/suggest", {
+  //         summary: draft.summary,
+  //         experience: draft.experience
+  //           .map((e) => e.bullets.join(" "))
+  //           .join(" "),
+  //         skills: draft.skills.join(", "),
+  //       });
+
+  //       setSuggestions(data.suggestions || []);
+  //     } catch (err) {
+  //       setError(
+  //         err.response?.data?.message ||
+  //           "AI suggestions are unavailable right now."
+  //       );
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   }
+
+  //   fetchSuggestions();
+  // }, []);
+
   useEffect(() => {
     async function fetchSuggestions() {
       try {
         setLoading(true);
         setError("");
 
-        const { data } = await axiosClient.post("/ai/suggest", {
-          summary: draft.summary,
-          experience: draft.experience
-            .map((e) => e.bullets.join(" "))
-            .join(" "),
-          skills: draft.skills.join(", "),
-        });
+        const response = await improveResume(draft);
 
-        setSuggestions(data.suggestions || []);
+        let suggestions = [];
+
+        try {
+          suggestions = JSON.parse(response.result);
+        } catch {
+          // If Gemini returns plain text instead of JSON
+          suggestions = [
+            {
+              field: "summary",
+              before: draft.summary,
+              after: response.result,
+            },
+          ];
+        }
+
+        setSuggestions(suggestions);
       } catch (err) {
         setError(
           err.response?.data?.message ||
@@ -39,7 +76,6 @@ export default function AISuggestions() {
 
     fetchSuggestions();
   }, []);
-
   function accept(s, index) {
     if (s.field === "summary") {
       setDraft({

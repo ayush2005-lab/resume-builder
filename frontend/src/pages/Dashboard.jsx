@@ -1,5 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  FileText,
+  Sparkles,
+  Plus,
+  FolderOpen,
+  Brain,
+  LayoutTemplate,
+  ArrowRight,
+} from "lucide-react";
 import axiosClient from "../api/axiosClient";
 import { useAuth } from "../context/AuthContext";
 
@@ -14,152 +23,162 @@ export default function Dashboard() {
       .catch(() => {});
   }, []);
 
-  return (
-    <div className="dashboard-page">
-      {/* Hero Section */}
-      <section className="dashboard-hero">
-        <div>
-          <span className="dashboard-eyebrow">YOUR RESUME WORKSPACE</span>
+  const cards = [
+    {
+      title: "My Resumes",
+      value: count,
+      icon: <FileText className="w-7 h-7 text-blue-600" />,
+    },
+    {
+      title: "AI Assistant",
+      value: "Ready",
+      icon: <Sparkles className="w-7 h-7 text-violet-600" />,
+    },
+    {
+      title: "Templates",
+      value: "3",
+      icon: <LayoutTemplate className="w-7 h-7 text-emerald-600" />,
+    },
+  ];
 
-          <h1>
-            Welcome back,{" "}
-            <span>{user?.name || "there"}</span> 👋
+  return (
+    <div className="min-h-screen bg-slate-50 p-6">
+      <div className="mx-auto max-w-7xl">
+
+        {/* Hero */}
+        <div className="rounded-3xl bg-gradient-to-r from-blue-600 to-indigo-700 p-10 text-white shadow-xl">
+          <p className="uppercase tracking-widest text-sm text-blue-100">
+            Resume Builder
+          </p>
+
+          <h1 className="mt-3 text-4xl font-bold">
+            Welcome back, {user?.name || "User"} 👋
           </h1>
 
-          <p>
-            Build a resume that represents your skills, experience, and
-            potential.
+          <p className="mt-3 max-w-xl text-blue-100">
+            Create ATS-friendly resumes, improve them with AI, and download
+            professional PDFs in minutes.
           </p>
-        </div>
 
-        <Link to="/create" className="primary-action">
-          <span>＋</span>
-          Create Resume
-        </Link>
-      </section>
-
-      {/* Stats */}
-      <section className="dashboard-stats">
-        <div className="stat-card">
-          <div className="stat-icon">📄</div>
-          <div>
-            <span className="stat-label">My Resumes</span>
-            <strong>{count}</strong>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon">✨</div>
-          <div>
-            <span className="stat-label">AI Powered</span>
-            <strong>Ready</strong>
-          </div>
-        </div>
-
-        <div className="stat-card">
-          <div className="stat-icon">🚀</div>
-          <div>
-            <span className="stat-label">Next Step</span>
-            <strong>Build</strong>
-          </div>
-        </div>
-      </section>
-
-      {/* Main Actions */}
-      <section className="dashboard-section">
-        <div className="section-heading">
-          <div>
-            <h2>What would you like to do?</h2>
-            <p>Choose an option to get started.</p>
-          </div>
-        </div>
-
-        <div className="dashboard-actions">
-          <Link to="/create" className="action-card create-card">
-            <div className="action-card-top">
-              <div className="action-icon">＋</div>
-              <span className="action-arrow">→</span>
-            </div>
-
-            <h3>Create a new resume</h3>
-
-            <p>
-              Start from scratch and build a professional resume with
-              customizable sections and templates.
-            </p>
-
-            <span className="action-link">Start building →</span>
-          </Link>
-
-          <Link to="/improve" className="action-card improve-card">
-            <div className="action-card-top">
-              <div className="action-icon">✨</div>
-              <span className="action-arrow">→</span>
-            </div>
-
-            <h3>Improve an existing resume</h3>
-
-            <p>
-              Upload your PDF or DOCX resume and use AI-powered suggestions
-              to improve your content.
-            </p>
-
-            <span className="action-link">Improve resume →</span>
+          <Link
+            to="/create"
+            className="mt-8 inline-flex items-center gap-2 rounded-xl bg-white px-6 py-3 font-semibold text-blue-700 transition hover:scale-105"
+          >
+            <Plus size={20} />
+            Create Resume
           </Link>
         </div>
-      </section>
 
-      {/* Resumes Section */}
-      <section className="dashboard-section resume-overview">
-        <div className="section-heading">
-          <div>
-            <h2>Your resume workspace</h2>
-            <p>
-              {count > 0
-                ? `You currently have ${count} resume${
-                    count === 1 ? "" : "s"
-                  } saved.`
-                : "You haven't created a resume yet."}
-            </p>
-          </div>
+        {/* Stats */}
+        <div className="mt-8 grid gap-6 md:grid-cols-3">
+          {cards.map((card) => (
+            <div
+              key={card.title}
+              className="rounded-2xl bg-white p-6 shadow-md transition hover:-translate-y-1 hover:shadow-xl"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500">{card.title}</p>
+                  <h2 className="mt-2 text-3xl font-bold">
+                    {card.value}
+                  </h2>
+                </div>
 
-          {count > 0 && (
-            <Link to="/my-resumes" className="secondary-action">
-              View all resumes →
-            </Link>
-          )}
+                {card.icon}
+              </div>
+            </div>
+          ))}
         </div>
 
-        {count === 0 ? (
-          <div className="empty-resume-card">
-            <div className="empty-icon">📄</div>
-            <h3>Your resume journey starts here</h3>
-            <p>
-              Create your first resume and start building your professional
-              profile.
-            </p>
-            <Link to="/create" className="secondary-action">
-              Create your first resume
-            </Link>
-          </div>
-        ) : (
-          <div className="resume-summary-card">
-            <div className="resume-summary-icon">📋</div>
+        {/* Quick Actions */}
+        <div className="mt-10">
+          <h2 className="mb-5 text-2xl font-bold">
+            Quick Actions
+          </h2>
 
-            <div className="resume-summary-content">
-              <h3>Your resumes are ready</h3>
-              <p>
-                Continue editing an existing resume or create a new version
-                for a different job opportunity.
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+
+            <Link
+              to="/create"
+              className="rounded-2xl bg-white p-6 shadow-md hover:shadow-xl"
+            >
+              <Plus className="mb-4 text-blue-600" />
+              <h3 className="font-semibold text-lg">
+                New Resume
+              </h3>
+              <p className="text-gray-500 text-sm mt-2">
+                Start building from scratch.
+              </p>
+            </Link>
+
+            <Link
+              to="/my-resumes"
+              className="rounded-2xl bg-white p-6 shadow-md hover:shadow-xl"
+            >
+              <FolderOpen className="mb-4 text-emerald-600" />
+              <h3 className="font-semibold text-lg">
+                My Resumes
+              </h3>
+              <p className="text-gray-500 text-sm mt-2">
+                View and manage saved resumes.
+              </p>
+            </Link>
+
+            <Link
+              to="/improve"
+              className="rounded-2xl bg-white p-6 shadow-md hover:shadow-xl"
+            >
+              <Brain className="mb-4 text-violet-600" />
+              <h3 className="font-semibold text-lg">
+                AI Improve
+              </h3>
+              <p className="text-gray-500 text-sm mt-2">
+                Improve your resume using AI.
+              </p>
+            </Link>
+
+            <Link
+              to="/choose-template"
+              className="rounded-2xl bg-white p-6 shadow-md hover:shadow-xl"
+            >
+              <LayoutTemplate className="mb-4 text-orange-600" />
+              <h3 className="font-semibold text-lg">
+                Templates
+              </h3>
+              <p className="text-gray-500 text-sm mt-2">
+                Explore resume templates.
+              </p>
+            </Link>
+
+          </div>
+        </div>
+
+        {/* Resume Status */}
+        <div className="mt-10 rounded-2xl bg-white p-8 shadow-md">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-bold">
+                Resume Workspace
+              </h2>
+
+              <p className="mt-2 text-gray-500">
+                {count > 0
+                  ? `You currently have ${count} resume${count > 1 ? "s" : ""}.`
+                  : "You haven't created a resume yet."}
               </p>
             </div>
 
-            <Link to="/my-resumes" className="primary-action small">
-              Manage Resumes
+            <Link
+              to="/my-resumes"
+              className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-white hover:bg-blue-700"
+            >
+              Manage
+              <ArrowRight size={18} />
             </Link>
           </div>
-        )}
-      </section>
+        </div>
+
+      </div>
     </div>
   );
 }
