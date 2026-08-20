@@ -38,7 +38,7 @@ export default function ImproveResume() {
   return (
     <div className="page">
       <h2>Upload resume</h2>
-      <p style={{ color: "#666" }}>PDF or DOCX. We will parse it into structured fields.</p>
+      <p style={{ color: "#666" }}>DOCX. We will parse it into structured fields.</p>
       <div className="card">
         <input type="file" accept=".pdf,.docx" onChange={handleFile} disabled={loading} />
         {loading && <p style={{ fontSize: "0.85rem" }}>Parsing file…</p>}
