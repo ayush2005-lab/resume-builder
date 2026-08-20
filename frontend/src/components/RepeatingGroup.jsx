@@ -70,14 +70,14 @@ export default function RepeatingGroup({
         ))}
       </div>
 
-      {/* <button
+      <button
         type="button"
         className="repeating-add-button"
         onClick={addItem}
       >
         <span className="add-icon">＋</span>
         {addLabel}
-      </button> */}
+      </button>
     </div>
   );
 }

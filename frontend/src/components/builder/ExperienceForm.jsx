@@ -1,4 +1,4 @@
-import { Briefcase, Plus } from "lucide-react";
+import { Briefcase } from "lucide-react";
 import RepeatingGroup from "../RepeatingGroup";
 
 export default function ExperienceForm({ draft, setDraft }) {
@@ -126,11 +126,6 @@ Collaborated with designers`}
           </div>
         )}
       />
-
-      { <button className="mt-2 flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 font-medium text-white hover:bg-blue-700">
-        <Plus size={18} />
-        Add New Experience
-      </button> }
 
     </div>
   );

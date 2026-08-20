@@ -9,6 +9,8 @@ import PersonalInfo from "../components/builder/PersonalInfo";
 import ResumePreview from "../components/preview/ResumePreview";
 import ExperienceForm from "../components/builder/ExperienceForm";
 import EducationForm from "../components/builder/EducationForm";
+import ProjectsForm from "../components/builder/ProjectsForm";
+import SkillsForm from "../components/builder/SkillsForm";
 
 export default function CreateResume() {
   const { draft, setDraft, resetDraft } = useDraft();
@@ -489,6 +491,16 @@ return (
           />
 
           <EducationForm
+            draft={draft}
+            setDraft={setDraft}
+          />
+
+          <ProjectsForm
+            draft={draft}
+            setDraft={setDraft}
+          />
+
+          <SkillsForm
             draft={draft}
             setDraft={setDraft}
           />
